@@ -1,0 +1,13 @@
+{% if form.intro %}
+<p>{{ form.intro }}</p>
+{% endif %}
+
+<form method="POST"{% if form_for_form.is_multipart %} enctype="multipart/form-data"{% endif %}
+                   {% if form.action %} action={{ form.action }}{% endif %}>
+    {% if form.csrf %}{% csrf_token %}{% endif %}
+    <table>
+    {{ form_for_form.as_table }}
+    </table>
+    <div style="clear: both;">&nbsp;</div>
+    <input type="submit" value="{{ form.button_text }}" />
+</form>

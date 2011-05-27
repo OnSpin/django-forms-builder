@@ -1,6 +1,7 @@
 
 from datetime import datetime
 
+from django.conf import settings as django_settings
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
@@ -149,6 +150,8 @@ class AbstractField(models.Model):
     """
 
     label = models.CharField(_("Label"), max_length=settings.LABEL_MAX_LENGTH)
+    if "cms" in django_settings.INSTALLED_APPS:
+        name = models.CharField(verbose_name=_("Name"), help_text=_("HTML tag name attribute value, leave blank if the form isn't being sent somewhere else."), max_length=128, blank=True)
     field_type = models.IntegerField(_("Type"), choices=fields.NAMES)
     required = models.BooleanField(_("Required"), default=True)
     visible = models.BooleanField(_("Visible"), default=True)
@@ -160,7 +163,11 @@ class AbstractField(models.Model):
     default = models.CharField(_("Default value"), blank=True,
         max_length=settings.FIELD_MAX_LENGTH)
     placeholder_text = placeholder_text_field()
-    help_text = models.CharField(_("Help text"), blank=True, max_length=100)
+    if "cms" in django_settings.INSTALLED_APPS:
+        help_text = models.TextField(_("Help text"), blank=True)
+    else:
+        help_text = models.CharField(_("Help text"), blank=True, max_length=100)
+
 
     objects = FieldManager()
 
@@ -246,3 +253,33 @@ class FormEntry(AbstractFormEntry):
 
 class FieldEntry(AbstractFieldEntry):
     entry = models.ForeignKey("FormEntry", related_name="fields")
+
+#####################################################
+#                                                   #
+# If django-cms is installed lets add some plugins. #
+#                                                   #
+#####################################################
+
+if "cms" in django_settings.INSTALLED_APPS:
+    from cms.models import CMSPlugin
+
+    class CMSForm(CMSPlugin, Form):
+        action = models.CharField(max_length=256, verbose_name=_("Action"), help_text=_("If you want the form to be submitted somewhere else enter the URL here."), blank=True)
+        csrf = models.BooleanField(verbose_name=_("CSRF Token"), help_text=_("Whether the form needs to add a CSRF token during rendering."), default=True)
+
+        def copy_relatinos(self, oldinstance):
+            if self.id is None:
+                self.save()
+
+            for field in oldinstance.fields:
+                field.id = None
+                field.form = self
+                field.save()
+
+        def __unicode__(self):
+            return self.title
+
+        class Meta:
+            verbose_name = "CMS Form"
+            verbose_name = "CMS Forms"
+

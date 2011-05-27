@@ -5,6 +5,7 @@ from uuid import uuid4
 
 from django import forms
 from django.forms.extras import SelectDateWidget
+from django.conf import settings as django_settings
 from django.core.files.storage import FileSystemStorage
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
@@ -78,7 +79,10 @@ class FormForForm(forms.ModelForm):
         self.form_fields = form.fields.visible()
         super(FormForForm, self).__init__(*args, **kwargs)
         for field in self.form_fields:
-            field_key = "field_%s" % field.id
+            if "cms" in django_settings.INSTALLED_APPS and field.name:
+                field_key = field.name
+            else:
+                field_key = "field_%s" % field.id
             field_class = fields.CLASSES[field.field_type]
             field_widget = fields.WIDGETS.get(field.field_type)
             field_args = {"label": field.label, "required": field.required,

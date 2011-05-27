@@ -4,6 +4,7 @@ from datetime import datetime
 from mimetypes import guess_type
 from os.path import join
 
+from django.conf import settings
 from django.conf.urls.defaults import patterns, url
 from django.contrib import admin
 from django.core.files.storage import FileSystemStorage
@@ -32,6 +33,7 @@ if USE_SITES:
     form_admin_fieldsets.append((_("Sites"), {"fields": ("sites",),
         "classes": ("collapse",)}))
     form_admin_filter_horizontal = ("sites",)
+
 
 class FieldAdmin(admin.TabularInline):
     model = Field
