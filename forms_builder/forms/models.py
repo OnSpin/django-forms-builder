@@ -282,4 +282,6 @@ if "cms" in django_settings.INSTALLED_APPS:
         class Meta:
             verbose_name = "CMS Form"
             verbose_name = "CMS Forms"
+    
+    
 
